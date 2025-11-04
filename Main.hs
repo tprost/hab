@@ -2,6 +2,7 @@ module Main where
 
 import qualified GLFW
 import qualified Sokol as SG
+import qualified ShaderAssets
 import System.Exit (exitFailure)
 import Control.Monad (unless, when)
 import Foreign.Marshal.Array (withArray)
@@ -17,32 +18,10 @@ vertices =
     ,  0.5,  -0.5,  0.0, 0.0, 1.0  -- bottom-right (blue)
     ]
 
--- Vertex shader source (GLSL 330)
-vertexShaderSource :: String
-vertexShaderSource = unlines
-    [ "#version 330"
-    , "layout(location=0) in vec2 position;"
-    , "layout(location=1) in vec3 color0;"
-    , "out vec3 color;"
-    , "void main() {"
-    , "    gl_Position = vec4(position, 0.0, 1.0);"
-    , "    color = color0;"
-    , "}"
-    ]
-
--- Fragment shader source (GLSL 330)
-fragmentShaderSource :: String
-fragmentShaderSource = unlines
-    [ "#version 330"
-    , "in vec3 color;"
-    , "out vec4 frag_color;"
-    , "void main() {"
-    , "    frag_color = vec4(color, 1.0);"
-    , "}"
-    ]
-
 main :: IO ()
 main = do
+    putStrLn "Starting program..."
+
     -- Initialize GLFW
     initSuccess <- GLFW.init
     unless initSuccess $ do
@@ -60,19 +39,29 @@ main = do
             -- Make the OpenGL context current
             GLFW.makeContextCurrent (Just window)
 
+            putStrLn "OpenGL context created"
+
             -- Setup Sokol
             SG.setup 1
+            putStrLn "Sokol setup complete"
 
             -- Create vertex buffer
             let vertexSize = length vertices * sizeOf (0.0 :: Float)
             vbuf <- withArray vertices $ \ptr ->
                 SG.makeVertexBuffer (castPtr ptr) vertexSize
+            putStrLn "Vertex buffer created"
 
-            -- Create shader
-            shader <- SG.makeShaderGLSL vertexShaderSource fragmentShaderSource
+            -- Debug: print shader lengths
+            putStrLn $ "Vertex shader length: " ++ show (length ShaderAssets.vertexShader)
+            putStrLn $ "Fragment shader length: " ++ show (length ShaderAssets.fragmentShader)
+
+            -- Create shader (shaders are embedded at compile time)
+            shader <- SG.makeShaderGLSL ShaderAssets.vertexShader ShaderAssets.fragmentShader
+            putStrLn "Shader created"
 
             -- Create pipeline with position and color attributes
             pipeline <- SG.makePipelinePosColor shader
+            putStrLn "Pipeline created"
 
             putStrLn "Triangle setup complete! Press ESC or close window to exit."
 

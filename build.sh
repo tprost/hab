@@ -33,8 +33,12 @@ gcc -c sokol_helpers.c -o "$BUILD_DIR/sokol_helpers.o" \
 GLFW_CFLAGS=$(pkg-config --cflags glfw3)
 GLFW_LIBS=$(pkg-config --libs glfw3)
 
+# Get proper libGL from package config or system
+LIBGL_PATH=$(pkg-config --variable=libdir gl 2>/dev/null || echo "/run/opengl-driver/lib")
+
 echo "GLFW flags: $GLFW_CFLAGS"
 echo "GLFW libs: $GLFW_LIBS"
+echo "GL path: $LIBGL_PATH"
 
 # Build with GHC
 echo "Compiling Haskell code..."
@@ -44,7 +48,7 @@ ghc Main.hs \
     -I"$SOKOL_INCLUDE" \
     "$BUILD_DIR/sokol_impl.o" \
     "$BUILD_DIR/sokol_helpers.o" \
-    -lGL \
+    -L"$LIBGL_PATH" -lGL \
     -outputdir "$BUILD_DIR" \
     -o hab
 
