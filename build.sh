@@ -14,6 +14,10 @@ fi
 BUILD_DIR="build"
 mkdir -p "$BUILD_DIR"
 
+# Compile shaders with sokol-shdc (validates and optimizes)
+echo "Compiling shaders with sokol-shdc..."
+sokol-shdc -i shaders/triangle.glsl -o shaders/triangle_compiled -l glsl410 -f bare
+
 # Get Sokol include path from nix-shell environment
 SOKOL_INCLUDE=$(echo $NIX_CFLAGS_COMPILE | grep -o '\-isystem [^ ]*sokol[^ ]*' | head -1 | cut -d' ' -f2)
 echo "Sokol include path: $SOKOL_INCLUDE"
