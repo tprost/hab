@@ -15,11 +15,13 @@ module Sokol
     , Pipeline(..)
     , makeVertexBuffer
     , makeShaderGLSL
+    , makeShaderGLSLWithVSUniform
     , makePipelineSimple
     , makePipelinePosColor
       -- * Drawing
     , applyPipeline
     , applyBindingsSimple
+    , applyUniformsVec2
     , draw
       -- * Constants
     , vertexFormatFloat2
@@ -83,6 +85,9 @@ foreign import ccall "sokol_make_vertex_buffer"
 foreign import ccall "sokol_make_shader_glsl"
     c_sokol_make_shader_glsl :: CString -> CString -> IO CUInt
 
+foreign import ccall "sokol_make_shader_glsl_with_vs_uniform"
+    c_sokol_make_shader_glsl_with_vs_uniform :: CString -> CString -> IO CUInt
+
 foreign import ccall "sokol_make_pipeline_simple"
     c_sokol_make_pipeline_simple :: CUInt -> CSize -> CInt -> CInt -> IO CUInt
 
@@ -94,6 +99,9 @@ foreign import ccall "sokol_apply_pipeline_wrapper"
 
 foreign import ccall "sokol_apply_bindings_simple"
     c_sokol_apply_bindings_simple :: CUInt -> IO ()
+
+foreign import ccall "sokol_apply_uniforms_vs_vec2"
+    c_sokol_apply_uniforms_vs_vec2 :: CFloat -> CFloat -> IO ()
 
 foreign import capi "sokol/sokol_gfx.h sg_draw"
     c_sg_draw :: CInt -> CInt -> CInt -> IO ()
@@ -133,6 +141,13 @@ makeShaderGLSL vsSrc fsSrc = do
                     c_sokol_make_shader_glsl vsPtr fsPtr
     return (Shader shdId)
 
+makeShaderGLSLWithVSUniform :: String -> String -> IO Shader
+makeShaderGLSLWithVSUniform vsSrc fsSrc = do
+    shdId <- withCString vsSrc $ \vsPtr ->
+                withCString fsSrc $ \fsPtr ->
+                    c_sokol_make_shader_glsl_with_vs_uniform vsPtr fsPtr
+    return (Shader shdId)
+
 makePipelineSimple :: Shader -> Int -> Int -> Int -> IO Pipeline
 makePipelineSimple (Shader shdId) stride attrIndex format = do
     pipId <- c_sokol_make_pipeline_simple
@@ -152,6 +167,9 @@ applyPipeline (Pipeline pipId) = c_sokol_apply_pipeline_wrapper pipId
 
 applyBindingsSimple :: Buffer -> IO ()
 applyBindingsSimple (Buffer bufId) = c_sokol_apply_bindings_simple bufId
+
+applyUniformsVec2 :: Float -> Float -> IO ()
+applyUniformsVec2 x y = c_sokol_apply_uniforms_vs_vec2 (realToFrac x) (realToFrac y)
 
 draw :: Int -> Int -> Int -> IO ()
 draw baseElement numElements numInstances =

@@ -1,3 +1,5 @@
 build
 hab
 shaders/*compiled*
+*compiled*.glsl
+**/*/hello_square

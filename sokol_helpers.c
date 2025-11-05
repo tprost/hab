@@ -44,6 +44,18 @@ uint32_t sokol_make_shader_glsl(const char* vs_src, const char* fs_src) {
     return sg_make_shader(&desc).id;
 }
 
+// Create a shader with a vec2 uniform in the vertex shader
+uint32_t sokol_make_shader_glsl_with_vs_uniform(const char* vs_src, const char* fs_src) {
+    sg_shader_desc desc = {0};
+    desc.vs.source = vs_src;
+    desc.vs.uniform_blocks[0].size = 16;  // vec4 size in bytes
+    desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params";
+    desc.vs.uniform_blocks[0].uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
+    desc.vs.uniform_blocks[0].uniforms[0].array_count = 1;
+    desc.fs.source = fs_src;
+    return sg_make_shader(&desc).id;
+}
+
 // Create a simple pipeline (generic version)
 uint32_t sokol_make_pipeline_simple(uint32_t shd_id, size_t stride, int attr_index, int format) {
     sg_pipeline_desc desc = {0};
@@ -84,4 +96,12 @@ void sokol_apply_bindings_simple(uint32_t vbuf_id) {
     sg_bindings bindings = {0};
     bindings.vertex_buffers[0].id = vbuf_id;
     sg_apply_bindings(&bindings);
+}
+
+// Apply vertex shader uniforms (vec2 offset, but padded to vec4)
+void sokol_apply_uniforms_vs_vec2(float x, float y) {
+    // GLSL uniform blocks are packed as vec4 arrays
+    float params[4] = { x, y, 0.0f, 0.0f };
+    sg_range data = { .ptr = params, .size = sizeof(params) };
+    sg_apply_uniforms(SG_SHADERSTAGE_VS, 0, &data);
 }

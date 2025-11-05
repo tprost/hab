@@ -19,6 +19,8 @@ module GLFW
       -- * Input handling
     , Key(..)
     , KeyState(..)
+    , toKeyCode
+    , fromKeyAction
     , getKey
     , getFramebufferSize
     ) where
@@ -45,6 +47,10 @@ data Key
     = Key'Unknown
     | Key'Escape
     | Key'Space
+    | Key'Right
+    | Key'Left
+    | Key'Down
+    | Key'Up
     | Key'A | Key'B | Key'C | Key'D | Key'E | Key'F | Key'G | Key'H
     | Key'I | Key'J | Key'K | Key'L | Key'M | Key'N | Key'O | Key'P
     | Key'Q | Key'R | Key'S | Key'T | Key'U | Key'V | Key'W | Key'X
@@ -55,6 +61,10 @@ toKeyCode :: Key -> KeyCode
 toKeyCode Key'Unknown = -1
 toKeyCode Key'Space   = 32
 toKeyCode Key'Escape  = 256
+toKeyCode Key'Right   = 262
+toKeyCode Key'Left    = 263
+toKeyCode Key'Down    = 264
+toKeyCode Key'Up      = 265
 toKeyCode Key'A = 65
 toKeyCode Key'B = 66
 toKeyCode Key'C = 67
